@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold: #f59e0b;
+  --color-silver: #94a3b8;
+  --color-bronze: #b45309;
+
+  --color-bg-primary: #0f0f13;
+  --color-bg-card: #1a1a22;
+  --color-bg-elevated: #22222e;
+
+  --color-accent: #7c3aed;
+  --color-accent-hover: #6d28d9;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: var(--font-sans);
+  background-color: #0f0f13;
+  color: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: fixed;
+  top: -48px;
+  left: 12px;
+  z-index: 1000;
+  border-radius: 10px;
+  background: #7c3aed;
+  color: #ffffff;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: top 0.18s ease;
+}
+
+.skip-link:focus-visible {
+  top: 12px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #1a1a22;
+}
+::-webkit-scrollbar-thumb {
+  background: #3f3f52;
+  border-radius: 3px;
+}
+
+details.mr-admin-details > summary {
+  list-style: none;
+}
+
+details.mr-admin-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.mr-admin-details > summary .mr-admin-details-chevron {
+  transition: transform 150ms ease;
+}
+
+details.mr-admin-details[open] > summary .mr-admin-details-chevron {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
