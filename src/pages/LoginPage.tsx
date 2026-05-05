@@ -49,6 +49,7 @@ const LoginPage = () => {
     }
 
     notify('Успешный вход в панель учителя.', 'success')
+    setSubmitting(false)
     navigate('/admin', { replace: true })
   }
 

@@ -1,6 +1,10 @@
+import { withTimeout } from './asyncTimeout'
 import type { Database } from './database.types'
 import { supabase } from './supabase'
 import type { Badge, Student } from './types'
+
+/** Таймаут одного прохода загрузки (два запроса к PostgREST). */
+export const FETCH_LEADERBOARD_TIMEOUT_MS = 22_000
 
 type StudentRow = Pick<
   Database['public']['Tables']['students']['Row'],
@@ -17,8 +21,13 @@ type JoinRow = {
 /**
  * Студенты с бейджами. Сортировка: score DESC, name ASC (RPD п. 5).
  * Два запроса — без зависимости от имени вложенной связи в PostgREST.
+ * Таймаут — чтобы на слабом мобильном интернете не висеть «вечно» на загрузке.
  */
 export async function fetchLeaderboard(): Promise<Student[]> {
+  return withTimeout(fetchLeaderboardUnchecked(), FETCH_LEADERBOARD_TIMEOUT_MS)
+}
+
+async function fetchLeaderboardUnchecked(): Promise<Student[]> {
   const { data: studentRows, error: errStudents } = await supabase
     .from('students')
     .select('id, name, score, created_at, group_id, student_groups ( id, name )')

@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
+import { TimeoutError, withTimeout } from '../lib/asyncTimeout'
 import { supabase } from '../lib/supabase'
+
+const TEACHER_AUTH_TIMEOUT_MS = 16_000
 
 type TeacherAuthState = {
   loading: boolean
   isTeacher: boolean
 }
 
-async function resolveTeacherState(): Promise<TeacherAuthState> {
+async function resolveTeacherStateInner(): Promise<TeacherAuthState> {
   const {
     data: { session },
   } = await supabase.auth.getSession()
@@ -22,6 +25,17 @@ async function resolveTeacherState(): Promise<TeacherAuthState> {
   }
 
   return { loading: false, isTeacher: Boolean(data) }
+}
+
+async function resolveTeacherState(): Promise<TeacherAuthState> {
+  try {
+    return await withTimeout(resolveTeacherStateInner(), TEACHER_AUTH_TIMEOUT_MS)
+  } catch (e) {
+    if (e instanceof TimeoutError) {
+      console.warn('[MasterRank] Проверка сессии учителя: таймаут сети')
+    }
+    return { loading: false, isTeacher: false }
+  }
 }
 
 export function useTeacherAuth(): TeacherAuthState {
@@ -40,7 +54,9 @@ export function useTeacherAuth(): TeacherAuthState {
     }
 
     refresh()
-    const { data } = supabase.auth.onAuthStateChange(() => refresh())
+    const { data } = supabase.auth.onAuthStateChange(() => {
+      queueMicrotask(() => refresh())
+    })
 
     return () => {
       disposed = true

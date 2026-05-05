@@ -1,9 +1,17 @@
 import { useEffect, useRef, useState } from 'react'
+import { TimeoutError } from '../lib/asyncTimeout'
 import { fetchLeaderboard } from '../lib/leaderboardApi'
 import { supabase } from '../lib/supabase'
 import type { Student } from '../lib/types'
 
 const REALTIME_DEBOUNCE_MS = 150
+
+function leaderboardErrorMessage(err: unknown): string {
+  if (err instanceof TimeoutError) {
+    return 'Сервер не ответил вовремя. Проверьте интернет (Wi‑Fi или мобильную сеть) и обновите страницу.'
+  }
+  return 'Не удалось загрузить рейтинг. Проверьте сеть и настройку Supabase.'
+}
 
 type Result = {
   students: Student[] | null
@@ -36,11 +44,9 @@ export function useLeaderboard(): Result {
           setError(null)
         }
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (!cancelled) {
-          setError(
-            'Не удалось загрузить рейтинг. Проверьте сеть и настройку Supabase.',
-          )
+          setError(leaderboardErrorMessage(err))
         }
       })
 
