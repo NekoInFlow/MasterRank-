@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers: static Vite build + SPA client routing (React Router).
+  // Do not use /* -> /index.html in _redirects — API returns 10021 (infinite loop).
+  "name": "maste-rrank",
+  "compatibility_date": "2026-05-05",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
