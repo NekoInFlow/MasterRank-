@@ -8,22 +8,20 @@ function isAllowedPath(pathname) {
   return ALLOWED_PREFIXES.some((prefix) => pathname.startsWith(prefix))
 }
 
-export default async function handler(req, res) {
-  const origin = normalizeOrigin(process.env.SUPABASE_ORIGIN)
-  if (!origin.startsWith('https://') || !origin.includes('.supabase.co')) {
-    res.status(500).send('SUPABASE_ORIGIN is not configured. Expected https://<ref>.supabase.co')
-    return
+function getProxiedPath(req) {
+  const raw = req.query.path
+  if (Array.isArray(raw)) {
+    return `/${raw.join('/')}`
   }
-
-  const pathParts = Array.isArray(req.query.path) ? req.query.path : []
-  const proxiedPath = `/${pathParts.join('/')}`
-  if (!isAllowedPath(proxiedPath)) {
-    res.status(403).send('Forbidden proxy path')
-    return
+  if (typeof raw === 'string' && raw.length > 0) {
+    return raw.startsWith('/') ? raw : `/${raw}`
   }
+  return '/'
+}
 
+function buildUpstreamQuery(queryObj) {
   const query = new URLSearchParams()
-  for (const [key, value] of Object.entries(req.query)) {
+  for (const [key, value] of Object.entries(queryObj)) {
     if (key === 'path') continue
     if (Array.isArray(value)) {
       for (const v of value) query.append(key, String(v))
@@ -31,7 +29,23 @@ export default async function handler(req, res) {
       query.append(key, String(value))
     }
   }
+  return query
+}
 
+export default async function handler(req, res) {
+  const origin = normalizeOrigin(process.env.SUPABASE_ORIGIN)
+  if (!origin.startsWith('https://') || !origin.includes('.supabase.co')) {
+    res.status(500).send('SUPABASE_ORIGIN is not configured. Expected https://<ref>.supabase.co')
+    return
+  }
+
+  const proxiedPath = getProxiedPath(req)
+  if (!isAllowedPath(proxiedPath)) {
+    res.status(403).send('Forbidden proxy path')
+    return
+  }
+
+  const query = buildUpstreamQuery(req.query)
   const upstreamUrl = `${origin}${proxiedPath}${query.toString() ? `?${query}` : ''}`
 
   const headers = { ...req.headers }
