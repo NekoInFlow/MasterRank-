@@ -183,8 +183,10 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 > `VITE_*` — обязательный префикс для Vite. Переменные без него в браузере недоступны.
 
 **Прокси к Supabase (рекомендуется для РФ через Vercel):**
-в проекте есть серверный endpoint `api/supabase/[...path].js`, который проксирует `rest/auth/storage` в ваш `*.supabase.co`.
-Для фронта укажи `VITE_SUPABASE_URL=https://<ваш-домен>/api/supabase`, а в переменных Vercel задай `SUPABASE_ORIGIN=https://<project-ref>.supabase.co`.
+в проекте есть серверный endpoint `api/supabase.js`, который проксирует `rest/auth/storage` в ваш `*.supabase.co`.
+Для фронта укажи `VITE_SUPABASE_URL=https://<ваш-домен>/api/supabase`, а в переменных Vercel задай:
+- `SUPABASE_ORIGIN=https://<project-ref>.supabase.co`
+- `SUPABASE_ANON_KEY=sb_publishable_...`
 В режиме прокси live-Realtime в браузере недоступен; приложение автоматически использует HTTP-опрос.
 
 ---
@@ -532,6 +534,7 @@ truncate public.student_badges, public.students restart identity cascade;
    - `VITE_SUPABASE_URL` = `https://<ваш-домен>/api/supabase`
    - `VITE_SUPABASE_ANON_KEY` = ваш `anon/public` ключ
    - `SUPABASE_ORIGIN` = `https://<project-ref>.supabase.co`
+   - `SUPABASE_ANON_KEY` = тот же `sb_publishable_...` (серверный fallback для прокси)
 5. Нажать **Deploy**.
 
 После этого каждый push в ветку `main` запускает автоматический деплой.

@@ -32,10 +32,43 @@ function buildUpstreamQuery(queryObj) {
   return query
 }
 
+function corsHeaders(req) {
+  const reqOrigin = String(req.headers.origin || '*')
+  return {
+    'Access-Control-Allow-Origin': reqOrigin,
+    'Access-Control-Allow-Methods': 'GET,HEAD,POST,PUT,PATCH,DELETE,OPTIONS',
+    'Access-Control-Allow-Headers':
+      req.headers['access-control-request-headers'] ||
+      'authorization,apikey,content-type,x-client-info,accept,prefer,accept-profile,content-profile,range,x-upsert',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin, Access-Control-Request-Headers',
+  }
+}
+
+function getProxyApiKey() {
+  const key = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
+  return typeof key === 'string' ? key.trim() : ''
+}
+
 export default async function handler(req, res) {
+  const cors = corsHeaders(req)
+  Object.entries(cors).forEach(([k, v]) => res.setHeader(k, v))
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).end()
+    return
+  }
+
   const origin = normalizeOrigin(process.env.SUPABASE_ORIGIN)
   if (!origin.startsWith('https://') || !origin.includes('.supabase.co')) {
     res.status(500).send('SUPABASE_ORIGIN is not configured. Expected https://<ref>.supabase.co')
+    return
+  }
+  const proxyApiKey = getProxyApiKey()
+  if (!proxyApiKey) {
+    res
+      .status(500)
+      .send('SUPABASE_ANON_KEY is not configured. Add SUPABASE_ANON_KEY (or VITE_SUPABASE_ANON_KEY) in Vercel env.')
     return
   }
 
@@ -52,6 +85,12 @@ export default async function handler(req, res) {
   delete headers.host
   delete headers.connection
   delete headers['content-length']
+  if (!headers.apikey) {
+    headers.apikey = proxyApiKey
+  }
+  if (!headers.authorization) {
+    headers.authorization = `Bearer ${proxyApiKey}`
+  }
   try {
     headers.host = new URL(origin).host
   } catch {
