@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:supabase-proxy": "npx wrangler deploy --config cloudflare/supabase-proxy/wrangler.toml",
+    "deploy:cf-app": "npx wrangler deploy"
   },
   "dependencies": {
     "@emnapi/core": "1.10.0",

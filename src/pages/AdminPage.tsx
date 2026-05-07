@@ -26,7 +26,11 @@ import {
 import { BadgeGlyph, BADGE_ICON_OPTIONS } from '../lib/badgeIcons'
 import { useToast } from '../components/ui/ToastProvider'
 import { useLeaderboard } from '../hooks/useLeaderboard'
-import { supabase } from '../lib/supabase'
+import {
+  ADMIN_LISTS_POLL_MS_WHEN_PROXY,
+  masterrankUsesSupabaseProxy,
+  supabase,
+} from '../lib/supabase'
 import type { Badge, Student, StudentGroup } from '../lib/types'
 
 const AdminPage = () => {
@@ -88,6 +92,11 @@ const AdminPage = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadBadges()
 
+    if (masterrankUsesSupabaseProxy()) {
+      const id = setInterval(() => void loadBadges(), ADMIN_LISTS_POLL_MS_WHEN_PROXY)
+      return () => clearInterval(id)
+    }
+
     const channel = supabase
       .channel('masterrank-admin-badges')
       .on(
@@ -106,6 +115,11 @@ const AdminPage = () => {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadGroups()
+
+    if (masterrankUsesSupabaseProxy()) {
+      const id = setInterval(() => void loadGroups(), ADMIN_LISTS_POLL_MS_WHEN_PROXY)
+      return () => clearInterval(id)
+    }
 
     const channel = supabase
       .channel('masterrank-admin-groups')

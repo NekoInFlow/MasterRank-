@@ -1,0 +1,13 @@
+# Прокси к Supabase: браузер бьёт в Worker → Worker ходит на *.supabase.co
+# Деплой (обязательно --config, если в корне репозитория есть wrangler.jsonc для фронта):
+#   cd cloudflare/supabase-proxy && npx wrangler deploy --config wrangler.toml
+# Секрет (реальный проект Supabase): npx wrangler secret put SUPABASE_ORIGIN
+#   значение: https://YOUR-REF.supabase.co  (без слэша в конце)
+
+name = "masterrank-supabase-proxy"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+
+# Публично: подставь URL своих Cloudflare Pages (или * для теста — не для продакшена)
+ [vars]
+ ALLOWED_ORIGIN = "https://maste-rrank.nserenko390.workers.dev"
