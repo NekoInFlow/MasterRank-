@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import { TimeoutError } from '../lib/asyncTimeout'
 import { fetchLeaderboard } from '../lib/leaderboardApi'
-import { supabase } from '../lib/supabase'
+import {
+  LEADERBOARD_POLL_MS_WHEN_PROXY,
+  masterrankUsesSupabaseProxy,
+  supabase,
+} from '../lib/supabase'
 import type { Student } from '../lib/types'
 
 const REALTIME_DEBOUNCE_MS = 150
@@ -20,8 +24,9 @@ type Result = {
 }
 
 /**
- * Первоначальная загрузка + подписка на Realtime изменения таблиц
- * students и student_badges (пункт дорожной карты 7). При любом событии — refetch с debounce.
+ * Первоначальная загрузка + подписка на Realtime (таблицы students, badges, student_badges).
+ * Если базовый URL — не *.supabase.co (например Cloudflare Worker-прокси), Realtime не используется;
+ * рейтинг обновляется опросом по HTTP.
  */
 export function useLeaderboard(): Result {
   const [students, setStudents] = useState<Student[] | null>(null)
@@ -73,6 +78,15 @@ export function useLeaderboard(): Result {
     }
 
     refetchLeaderboard()
+
+    // Cloudflare Worker proxy: HTTPS к Supabase есть, WebSocket Realtime — нет.
+    if (masterrankUsesSupabaseProxy()) {
+      const pollId = setInterval(refetchLeaderboard, LEADERBOARD_POLL_MS_WHEN_PROXY)
+      return () => {
+        cancelled = true
+        clearInterval(pollId)
+      }
+    }
 
     const scheduleRefetch = () => {
       clearDebounce()

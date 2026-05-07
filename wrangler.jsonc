@@ -1,5 +1,8 @@
 {
   // Cloudflare Workers: static Vite build + SPA client routing (React Router).
+  // Deploy: npm run build && npm run deploy:cf-app
+  // Если upload падает с fetch failed — сеть/VPN к API Cloudflare; это НЕ конфиг прокси к Supabase.
+  // Прокси: npm run deploy:supabase-proxy
   // Do not use /* -> /index.html in _redirects — API returns 10021 (infinite loop).
   "name": "maste-rrank",
   "compatibility_date": "2026-05-05",

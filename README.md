@@ -122,6 +122,21 @@ masterrank/
 - **npm** ≥ 9
 - Аккаунт [Supabase](https://supabase.com) (бесплатный tier достаточен)
 
+### Запуск для учителя в 1 клик (Windows, VPN MVP)
+
+В корне проекта есть батники:
+
+- `start-teacher.bat` — поднимает локальный прокси (`cloudflare/supabase-proxy`) и фронт.
+- `stop-teacher.bat` — останавливает оба окна.
+
+Перед первым запуском открой `start-teacher.bat` и подставь реальный `SUPABASE_ORIGIN`, например:
+
+```bat
+set "SUPABASE_ORIGIN=https://abcdefgh.supabase.co"
+```
+
+После этого учителю достаточно запускать `start-teacher.bat`.
+
 ### Установка
 
 ```bash
@@ -166,6 +181,11 @@ VITE_SUPABASE_ANON_KEY=your-anon-key-here
 | `VITE_SUPABASE_ANON_KEY` | Публичный `anon` ключ | `sb_publishable_...` |
 
 > `VITE_*` — обязательный префикс для Vite. Переменные без него в браузере недоступны.
+
+**Прокси к Supabase (рекомендуется для РФ через Vercel):**
+в проекте есть серверный endpoint `api/supabase/[...path].js`, который проксирует `rest/auth/storage` в ваш `*.supabase.co`.
+Для фронта укажи `VITE_SUPABASE_URL=https://<ваш-домен>/api/supabase`, а в переменных Vercel задай `SUPABASE_ORIGIN=https://<project-ref>.supabase.co`.
+В режиме прокси live-Realtime в браузере недоступен; приложение автоматически использует HTTP-опрос.
 
 ---
 
@@ -509,8 +529,9 @@ truncate public.student_badges, public.students restart identity cascade;
 2. В [Vercel Dashboard](https://vercel.com) → **Add New Project** → выбрать репозиторий.
 3. Vercel автоматически определит Vite. Настройки по умолчанию подходят.
 4. В **Settings → Environment Variables** добавить:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_SUPABASE_URL` = `https://<ваш-домен>/api/supabase`
+   - `VITE_SUPABASE_ANON_KEY` = ваш `anon/public` ключ
+   - `SUPABASE_ORIGIN` = `https://<project-ref>.supabase.co`
 5. Нажать **Deploy**.
 
 После этого каждый push в ветку `main` запускает автоматический деплой.
